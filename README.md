@@ -164,77 +164,87 @@ cd StickerSmash
 ### Добавить новый экран в стек
 Давайте создадим новый файл с именем **о.tsx** внутри **src/приложение** Каталог. Он отображает имя экрана, когда пользователь переходит к */about* Маршрут.
 
->import { Text, View, StyleSheet } from 'react-native';
->
->export default function AboutScreen() {
->  return (
->    <View style={styles.container}>
->      <Text style={styles.text}>About screen</Text>
->    </View>
->  );
->}
->const styles = StyleSheet.create({
->  container: {
->    flex: 1,
->    backgroundColor: '#25292e',
->    justifyContent: 'center',
->    alignItems: 'center',
->  },
->  text: {
->    color: '#fff',
->  },
->});
+```
+import { Text, View, StyleSheet } from 'react-native';
+
+export default function AboutScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>About screen</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: '#fff',
+  },
+});
+
+```
 
 Внутри **src/app/_layout.tsx** :
 1. Добавить <Stack.Screen /> Компонент и  options реквизит для обновления заголовка /about Маршрут.
 2. Обновить /index Название маршрута на Home путем добавления options.
 
->import { Stack } from 'expo-router';
->
->export default function RootLayout() {
->  return (
->    <u><Stack>
->      <Stack.Screen name="index" options={{ title: 'Home' }} />
->      <Stack.Screen name="about" options={{ title: 'About' }} />
->    </Stack></u>
->  );
->}
+```
+import { Stack } from 'expo-router';
+
+export default function RootLayout() {
+  return (
+    <Stack>
+      <Stack.Screen name="index" options={{ title: 'Home' }} />
+      <Stack.Screen name="about" options={{ title: 'About' }} />
+    </Stack>
+  );
+}
+
+```
 
 ### Навигация между экранами
 1. Импортировать Link компонент из expo-router внутри **src/app/index.tsx**.
 2. Добавить a Link компонент после <Text> компонент и пропуск href реквизит с /about Маршрут.
 3. Добавить стиль fontSize, textDecorationLine, и color к Link компонент. Он принимает тот же реквизит, что и <Text> компонент.
 
->import { Text, View, StyleSheet } from 'react-native';
->import { Link } from 'expo-router'; 
->
->export default function Index() {
->  return (
->    <View style={styles.container}>
->      <Text style={styles.text}>Home screen</Text>
->      <Link href="/about" style={styles.button}>
->        Go to About screen
->      </Link>
->    </View>
->  );
->}
->
->const styles = StyleSheet.create({
->  container: {
->    flex: 1,
->    backgroundColor: '#25292e',
->    alignItems: 'center',
->    justifyContent: 'center',
->  },
->  text: {
->   color: '#fff',
-> },
->  button: {
->    fontSize: 20,
->    textDecorationLine: 'underline',
->    color: '#fff',
->  },
->});
+```
+import { Text, View, StyleSheet } from 'react-native';
+ import { Link } from 'expo-router'; 
+
+export default function Index() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Home screen</Text>
+      <Link href="/about" style={styles.button}>
+        Go to About screen
+      </Link>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#fff',
+  },
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
+  },
+});
+
+```
 
 ### Добавить не найденный маршрут
 Когда маршрут не существует, мы можем использовать ***+not-found*** для отображения запасного экрана.
@@ -242,36 +252,38 @@ cd StickerSmash
 2. Добавить options реквизит от Stack.Screen для отображения пользовательского заголовка экрана для этого маршрута.
 3. Добавить a Link Компонент для перехода к / Маршрут, который является нашим запасным маршрутом.
 
->import { View, StyleSheet } from 'react-native';
->import { Link, Stack } from 'expo-router';
->
->export default function NotFoundScreen() {
->  return (
->    <>
->      <Stack.Screen options={{ title: 'Oops! Not Found' }} />
->      <View style={styles.container}>
->        <Link href="/" style={styles.button}>
->          Go back to Home screen!
->        </Link>
->      </View>
->    </>
->  );
->}
->
->const styles = StyleSheet.create({
->  container: {
->    flex: 1,
->    backgroundColor: '#25292e',
->    justifyContent: 'center',
->    alignItems: 'center',
->  }
->
->  button: {
->    fontSize: 20,
->    textDecorationLine: 'underline',
->    color: '#fff',
->  },
->});
+```
+import { View, StyleSheet } from 'react-native';
+import { Link, Stack } from 'expo-router';
+
+export default function NotFoundScreen() {
+  return (
+    <>
+      <Stack.Screen options={{ title: 'Oops! Not Found' }} />
+      <View style={styles.container}>
+        <Link href="/" style={styles.button}>
+          Go back to Home screen!
+        </Link>
+      </View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
+  },
+});
+```
 
 Чтобы проверить это, перейдите к ***http:localhost:8081/123*** URL в веб-браузере, так как там легко изменить путь URL. Приложение должно отображать *NotFoundScreen* компонент
 
