@@ -1764,12 +1764,14 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
       </GestureDetector>
     </Animated.View>
   );
-}```
+}
+```
 На предыдущем шаге мы спровоцировали *onStart*() обратный звонок для жеста крана, прикованного к *Gesture.Tap()* Метод. Для жеста сковороды укажите *onChange*() обратный звонок, который проходит, когда жест активен и движется.
 
   1. Создать a *drag* объект, чтобы справиться с жестом сковороды. The *onChange*() обратный звонок принимает *event* в качестве параметра. *changeX* и *changeY* свойства удерживают изменение позиции с момента последнего события и обновляют значения, хранящиеся в *translateX* и *translateY*.
   2. Определить *containerStyle* Объект, использующий *useAnimatedStyle()* Крюк. Это вернет множество преобразований. Для <Animated.View> компонент, нам нужно установить transform Имущество для *translateX* и *translateY* Ценности. Это изменит положение наклейки, когда жест активен.
-```const drag = Gesture.Pan().onChange(event => {
+```
+const drag = Gesture.Pan().onChange(event => {
   translateX.value += event.changeX;
   translateY.value += event.changeY;
 });
@@ -1785,14 +1787,16 @@ const containerStyle = useAnimatedStyle(() => {
       },
     ],
   };
-});```
+});
+```
 
 Далее, внутри кода JSX:
 
   1. Обновить <EmojiSticker> Компонент, чтобы <GestureDetector> Компонент становится компонентом верхнего уровня.
   2. Добавить *containerStyle* на <Animated.View> Компонент для применения стилей трансформации.
 
-```import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+```i
+mport { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ImageSourcePropType } from 'react-native';
 
@@ -1854,8 +1858,398 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
       </Animated.View>
     </GestureDetector>
   );
-}```
+}
+```
 
 ## Сделать скриншот
+### Установить библиотеки
+Установить **react-native-view-shot** и **expo-media-library**, выполните следующие команды:
+`npx expo install react-native-view-shot expo-media-library`
+### Подсказка для разрешений
+Приложение, которое требует конфиденциальной информации, такой как доступ к медиатеке устройства, должно получить разрешение на доступ или запретить доступ. Использовать *useMediaLibraryPermissions()* Крюк от *expo-image-picker*, мы можем использовать разрешение *permissionResponse* и *requestPermission*() Способ запросить доступ. Этот крючок запрашивает как разрешения на чтение, так и запись, которые охватывают выбор изображений из библиотеки и сохранение скриншотов к ней.
+
+Добавьте следующий фрагмент кода внутрь src/app/(tabs)/index.tsx:
+```
+import { useEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+
+// ...rest of the code remains same
+
+export default function Index() {
+  const [permissionResponse, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+  // ...rest of the code remains same
+
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, []);
+
+  // ...rest of the code remains same
+}
+```
+### Создайте референт для сохранения текущего представления
+Мы будем использовать *react-native-view-shot* чтобы позволить пользователю сделать снимок экрана в приложении. Эта библиотека захватывает скриншот <View> как изображение с использованием *captureRef*() Метод. Он возвращает URI захваченного файла снимков скриншота.
+
+  1. Импорт *captureRef* от *react-native-view-shot* и *useRef* От *React*.
+  2. Создать a *imageRef* эталонная переменная для хранения ссылки на снимок экрана, захваченного изображения.
+  3. Обернуть <ImageViewer> и <EmojiSticker> Компоненты внутри a <View> а затем передать ему справочную переменную.
+```
+import { useState, useRef } from 'react';
+import { captureRef } from 'react-native-view-shot';
+
+export default function Index() {
+   const imageRef = useRef<View>(null);
+
+  // ...rest of the code remains same
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.imageContainer}>
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
+      </View>
+      {/* ...rest of the code remains same */}
+    </GestureHandlerRootView>
+  );
+}
+```
+### Снимите скриншот и сохраните его
+Внутри **src/app/(tabs)/index.tsx**, обновить *onSaveImageAsync*() Функция со следующим кодом:
+```
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import { useEffect, useRef, useState } from 'react';
+import { ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { captureRef } from 'react-native-view-shot';
+
+import Button from '@/components/button';
+import CircleButton from '@/components/circle-button';
+import EmojiList from '@/components/emoji-list';
+import EmojiPicker from '@/components/emoji-picker';
+import IconButton from '@/components/icon-button';
+import ImageViewer from '@/components/image-viewer';
+
+import EmojiSticker from '@/components/emoji-sticker';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(
+    undefined
+  );
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [pickedEmoji, setPickedEmoji] = useState<
+    ImageSourcePropType | undefined
+  >(undefined);
+  const [permissionResponse, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+  const imageRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, []);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    try {
+      const localUri = await captureRef(imageRef, {
+        height: 440,
+        quality: 1,
+      });
+
+      await MediaLibrary.saveToLibraryAsync(localUri);
+      if (localUri) {
+        alert('Saved!');
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.imageContainer}>
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
+    </GestureHandlerRootView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+## Обработка различий платформы
+### Установить и импортировать dom-to-image
+Чтобы запечатлеть снимок экрана в Интернете и сохранить его в качестве изображения, мы будем использовать стороннюю библиотеку под названием *dom-to-image*. Он берет скриншот любого узла DOM и превращает его в векторный (SVG) или растровый (PNG или JPEG) изображение.
+
+Остановите сервер разработки и выполните следующую команду для установки библиотеки:
+`npm install dom-to-image`
+### Добавить код, специфичный для платформы
+Использовать *Platform* модуль от *React Native*, мы можем реализовать платформу специфическое поведение. Внутри **src/app/(tabs)/index.tsx**:
+
+  1. Импортировать *Platform* Модуль от *react-native*.
+  2. Импортировать *domtoimage* библиотека от *dom-to-image*.
+  3. Обновить *onSaveImageAsync*() функция, чтобы проверить, является ли текущая платформа 'web' с *Platform*.OS собственность. Если это так 'web', мы будем использовать *domtoimage.toJpeg*() способ преобразования и захвата тока <View> В качестве изображения JPEG. В противном случае мы будем продолжать использовать ту же логику, добавленную для собственных платформ.
+```
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import { useEffect, useRef, useState } from 'react';
+import { ImageSourcePropType, View, StyleSheet, Platform } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { captureRef } from 'react-native-view-shot';
+import domtoimage from 'dom-to-image';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+import EmojiPicker from '@/components/emoji-picker';
+import EmojiList from '@/components/emoji-list';
+import EmojiSticker from '@/components/emoji-sticker';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
+  const [permissionResponse, requestPermission] = ImagePicker.useMediaLibraryPermissions();
+  const imageRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!permissionResponse?.granted) {
+      requestPermission();
+    }
+  }, []);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    if (Platform.OS !== 'web') {
+      try {
+        const localUri = await captureRef(imageRef, {
+          height: 440,
+          quality: 1,
+        });
+
+        await MediaLibrary.saveToLibraryAsync(localUri);
+        if (localUri) {
+          alert('Saved!');
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      try {
+        const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+          quality: 0.95,
+          width: 320,
+          height: 440,
+        });
+
+        let link = document.createElement('a');
+        link.download = 'sticker-smash.jpeg';
+        link.href = dataUrl;
+        link.click();
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.imageContainer}>
+        <View ref={imageRef} collapsable={false}>
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
+    </GestureHandlerRootView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+## Настройка панели состояния, экрана брызг и значка приложения 
+### Настройка строки состояния
+*expo-status-bar* библиотека предустановлена в каждом проекте, созданном с использованием *create-expo-app*. Эта библиотека предоставляет *StatusBar* компонент для настройки стиля стенд состояния приложения.
+
+Внутри **src/app/_layout.tsx** :
+
+  1. Импорт *StatusBar* от *expo-status-bar*.
+  2. Группа The *StatusBar* и существующих *Stack* компоненты с Компонент Фрагмента *React*.
+```
+import { Stack } from 'expo-router';
+
+import { StatusBar } from 'expo-status-bar';
 
 
+export default function RootLayout() {
+  return (
+    <>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+      <StatusBar style="light" />
+    </>
+  );
+}
+```
+### Иконка приложения
+Как и изображение всплеска экрана, "icon" собственность в app.json файл настраивает путь значка приложения. По умолчанию новый проект Expo определяет правильный путь ***"./assets/images/icon.png"***. Нам не нужно ничего менять.
+### Всплеск экрана
+Экран брызг виден до загрузки контента приложения. Он использует меньший образ, такой как значок приложения, который центрирован. Он скрывается, как только контент приложения готов к отображению.
+
+*expo-splash-screen* Плагин уже поставляется предустановленным в каждом созданном проекте *create-expo-app*. Эта библиотека предоставляет плагин конфигурирования для настройки экрана брызг.
+
+В app.json, *expo-splash-screen* плагин уже настроен на использование значка приложения в качестве изображения экрана брызг (предоставлено в загружаемые активы) со следующим фрагментом, поэтому нам не нужно ничего менять:
+```
+{
+  "plugins": [
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png"
+      }
+    ]
+  ]
+}
+```
+Однако для тестирования экрана брызг мы **не можем использовать Expo Go или сборку разработки**. Чтобы протестировать его, нам нужно создать предварительный просмотр или производственную сборку нашего приложения.
