@@ -130,7 +130,7 @@ cd StickerSmash
 3. Заменить значение по умолчанию <Text> с "Домашний экран".
 5. Добавить a styles.text.color собственность для <Text> с ценностью ***#fff***(белый) для изменения цвета текста.
 
-'''
+```
 import { Text, View,  StyleSheet } from 'react-native';
 
 export default function Index() {
@@ -152,8 +152,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
 });
-
-'''
+```
 
 Как только вы сохраняете свои изменения, они отправляются и применяются к запущенным приложениям, подключенным к серверу разработки.
 
@@ -922,4 +921,941 @@ const styles = StyleSheet.create({
   },
 });
 ```
+## Создать модаль
+### Объявить переменную состояния для отображения кнопок
+Перед реализацией модала мы собираемся добавить три новые кнопки. Эти кнопки видны после того, как пользователь выбирает изображение из медиа-библиотеки или использует образ заполнителя. Одна из этих кнопок запустит модаль сборщика смайликов.
+
+В **src/app/(tbs)/index.tsx** :
+
+1. Объявить переменную булева состояния, *showAppOptions*, чтобы показать или скрыть кнопки, которые открывают модаль, наряду с несколькими другими вариантами. Когда экран приложения загружается, мы настроим его *false* Таким образом, опции не отображаются перед выбором изображения. Когда пользователь выбирает изображение или использует образ заполнителя, мы установим его *true*.
+2. Обновить *pickImageAsync()* функция для установления значения *showAppOptions* к *true* После того, как пользователь выбирает изображение.
+3. Обновите кнопку без темы, добавив onPress реквизит со следующим значением.
+
+```
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+      </View>
+      {showAppOptions ? (
+        <View />
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+});
+```
+Теперь мы можем удалить alert на Button компонент и обновление onPress реквизит при рендеринге второй кнопки в src/components/button.tsx:
+`<Pressable style={styles.button}  onPress={onPress}>`
+### Добавить кнопки
+Внутри каталога **src/components** создайте новый файл **circle-button.tsx** со следующим кодом:
+```
+import { View, Pressable, StyleSheet } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
+type Props = {
+  onPress: () => void;
+};
+
+export default function CircleButton({ onPress }: Props) {
+  return (
+    <View style={styles.circleButtonContainer}>
+      <Pressable style={styles.circleButton} onPress={onPress}>
+        <MaterialIcons name="add" size={38} color="#25292e" />
+      </Pressable>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  circleButtonContainer: {
+    width: 84,
+    height: 84,
+    marginHorizontal: 60,
+    borderWidth: 4,
+    borderColor: '#ffd33d',
+    borderRadius: 42,
+    padding: 3,
+  },
+  circleButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 42,
+    backgroundColor: '#fff',
+  },
+});
+```
+Создать именованный файл **icon-button.tsx** внутри **src/компоненты** Каталог. Этот компонент принимает три реквизита:
+
+  * icon: имя, соответствующее *MaterialIcons* Икона библиотеки.
+  * label: текстовая этикетка, отображаемая на кнопке.
+  * onPress: эта функция вызывает, когда пользователь нажимает кнопку.
+```
+import { Pressable, StyleSheet, Text } from 'react-native';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
+type Props = {
+  icon: keyof typeof MaterialIcons.glyphMap;
+  label: string;
+  onPress: () => void;
+};
+
+export default function IconButton({ icon, label, onPress }: Props) {
+  return (
+    <Pressable style={styles.iconButton} onPress={onPress}>
+      <MaterialIcons name={icon} size={24} color="#fff" />
+      <Text style={styles.iconButtonLabel}>{label}</Text>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  iconButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconButtonLabel: {
+    color: '#fff',
+    marginTop: 12,
+  },
+});
+```
+Внутренний **src/app/(tbs)/index.tsx** :
+
+  1. Импортировать *CircleButton* и *IconButton* Компоненты для их отображения.
+  2. Добавьте три функции заполнителя для этих кнопок. *onReset()* функции вызывают, когда пользователь нажимает кнопку сброса, в результате чего кнопка выбора изображения снова появляется. Мы добавим функциональность для двух других функций позже.
+```
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    // we will implement this later
+  };
+
+  const onSaveImageAsync = async () => {
+    // we will implement this later
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+### Создать модаль сборщика смайликов
+Модаль позволяет пользователю выбрать эмодзи из списка доступных эмодзи. Создайте файл **emoji-picker.tsx** внутри каталога **src/components**. Этот компонент принимает три реквизита:
+
+  * isVisible: бульон для определения состояния видимости модала.
+  * onClose: функция, чтобы закрыть модаль.
+  * children: используется позже для отображения списка эмодзи.
+```
+import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
+import { PropsWithChildren } from 'react';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
+type Props = PropsWithChildren<{
+  isVisible: boolean;
+  onClose: () => void;
+}>;
+
+export default function EmojiPicker({ isVisible, children, onClose }: Props) {
+  return (
+    <View>
+      <Modal animationType="slide" transparent={true} visible={isVisible}>
+        <View style={styles.modalContent}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Choose a sticker</Text>
+            <Pressable onPress={onClose}>
+              <MaterialIcons name="close" color="#fff" size={22} />
+            </Pressable>
+          </View>
+          {children}
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  modalContent: {
+    height: '25%',
+    width: '100%',
+    backgroundColor: '#25292e',
+    borderTopRightRadius: 18,
+    borderTopLeftRadius: 18,
+    position: 'absolute',
+    bottom: 0,
+  },
+  titleContainer: {
+    height: '16%',
+    backgroundColor: '#464C55',
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    color: '#fff',
+    fontSize: 16,
+  },
+});
+```
+Теперь давайте изменим **src/app/(tabs)/index.tsx** :
+
+  1. Импортировать <EmojiPicker> компонент.
+  2. Создать *isModalVisible* переменная состояния с *useState*. Его значение по умолчанию является *false*, который скрывает модаль, пока пользователь не нажмет кнопку, чтобы открыть его.
+  3. Заменить комментарий в *onAddSticker()* функция для обновления *isModalVisible* переменная для *true* когда пользователь нажимает кнопку. Это откроет сборщик смайликов.
+  4. Создать *onModalClose()* функция для обновления *isModalVisible* Переменная состояния.
+  5. Поместите <EmojiPicker> Компонент в нижней части *Index* компонент.
+
+```
+import { View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+
+import EmojiPicker from '@/components/emoji-picker';
+
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    // we will implement this later
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        {/* Emoji list component will go here */}
+      </EmojiPicker>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+### Показать список смайликов
+Давайте добавим горизонтальный список эмодзи в содержимое модала. Мы будем использовать <FlatList> Компонент от React Native для него.
+
+Создайте файл **emoji-list.tsx** в каталоге **src/components** и добавьте следующий код:
+```
+import { useState } from 'react';
+import { ImageSourcePropType, StyleSheet, FlatList, Platform, Pressable } from 'react-native';
+import { Image } from 'expo-image';
+
+type Props = {
+  onSelect: (image: ImageSourcePropType) => void;
+  onCloseModal: () => void;
+};
+
+export default function EmojiList({ onSelect, onCloseModal }: Props) {
+  const [emoji] = useState<ImageSourcePropType[]>([
+    require("@/assets/images/emoji1.png"),
+    require("@/assets/images/emoji2.png"),
+    require("@/assets/images/emoji3.png"),
+    require("@/assets/images/emoji4.png"),
+    require("@/assets/images/emoji5.png"),
+    require("@/assets/images/emoji6.png"),
+  ]);
+
+  return (
+    <FlatList
+      horizontal
+      showsHorizontalScrollIndicator={Platform.OS === 'web'}
+      data={emoji}
+      contentContainerStyle={styles.listContainer}
+      renderItem={({ item, index }) => (
+        <Pressable
+          onPress={() => {
+            onSelect(item);
+            onCloseModal();
+          }}>
+          <Image source={item} key={index} style={styles.image} />
+        </Pressable>
+      )}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  listContainer: {
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginRight: 20,
+  },
+});
+```
+Теперь обновите **src/app/(tabs)/index.tsx** Чтобы импортировать <EmojiList> компонент и замена комментариев внутри <EmojiPicker> компонент со следующим фрагментом кода:
+```
+import { ImageSourcePropType, View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+import EmojiPicker from '@/components/emoji-picker';
+
+import EmojiList from '@/components/emoji-list';
+
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    // we will implement this later
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+### Отобразить выбранный emoji
+Теперь мы поместим наклейку смайлика на изображение. Создайте новый файл в каталоге **src/components** и назовите его **emoji-sticker.tsx.** Затем добавьте следующий код:
+
+```
+import { ImageSourcePropType, View } from 'react-native';
+import { Image } from 'expo-image';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  return (
+    <View style={{ top: -350 }}>
+      <Image source={stickerSource} style={{ width: imageSize, height: imageSize }} />
+    </View>
+  );
+}
+```
+Импортировать этот компонент в **src/app/(tabs)/index.tsx** Файл и обновить *Index* компонент для отображения наклейки emoji на изображении. Мы проверим, *pickedEmoji* не является *undefined*:
+```
+import { ImageSourcePropType, View, StyleSheet } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import Button from '@/components/button';
+import ImageViewer from '@/components/image-viewer';
+import IconButton from '@/components/icon-button';
+import CircleButton from '@/components/circle-button';
+import EmojiPicker from '@/components/emoji-picker';
+import EmojiList from '@/components/emoji-list';
+import EmojiSticker from '@/components/emoji-sticker';
+
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+export default function Index() {
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [pickedEmoji, setPickedEmoji] = useState<ImageSourcePropType | undefined>(undefined);
+
+
+  const pickImageAsync = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowAppOptions(true);
+    } else {
+      alert('You did not select any image.');
+    }
+  };
+
+  const onReset = () => {
+    setShowAppOptions(false);
+  };
+
+  const onAddSticker = () => {
+    setIsModalVisible(true);
+  };
+
+  const onModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const onSaveImageAsync = async () => {
+    // we will implement this later
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.imageContainer}>
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+        {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+      </View>
+      {showAppOptions ? (
+        <View style={styles.optionsContainer}>
+          <View style={styles.optionsRow}>
+            <IconButton icon="refresh" label="Reset" onPress={onReset} />
+            <CircleButton onPress={onAddSticker} />
+            <IconButton icon="save-alt" label="Save" onPress={onSaveImageAsync} />
+          </View>
+        </View>
+      ) : (
+        <View style={styles.footerContainer}>
+          <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
+          <Button label="Use this photo" onPress={() => setShowAppOptions(true)} />
+        </View>
+      )}
+      <EmojiPicker isVisible={isModalVisible} onClose={onModalClose}>
+        <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
+      </EmojiPicker>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#25292e',
+    alignItems: 'center',
+  },
+  imageContainer: {
+    flex: 1,
+  },
+  footerContainer: {
+    flex: 1 / 3,
+    alignItems: 'center',
+  },
+  optionsContainer: {
+    position: 'absolute',
+    bottom: 80,
+  },
+  optionsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+});
+```
+
+## Добавить жесты
+### Добавить ЖестОбработчикРужникПросмотр
+Чтобы получить взаимодействие жестов для работы в приложении, мы вернемся *<GestureHandlerRootView>* от *react-native-gesture-handler* на вершине *Index* компонент. Заменить уровень корней <View> компонент в **src/app/(tabs)/index.tsx** с *<GestureHandlerRootView>*.
+```
+// ... rest of the import statements remain same
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+export default function Index() {
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      {/* ...rest of the code remains */}
+    </GestureHandlerRootView>
+  )
+}
+```
+### Используйте анимированные компоненты
+*Animated* Компонент смотрит на *style* реквизит компонента и определяет, какие значения анимировать и применять обновления для создания анимации. Реанимированный экспорт анимированных компонентов, таких как <Animated.View>, <Animated.Text>, или <Animated.ScrollView>. Мы будем применять анимацию к <Animated.Image> компонент, чтобы сделать двойной жест нажатия работает.
+
+  1. Откройте emoji-sticker.tsx Файл в src/компоненты Каталог. Внутри него, импортировать Animated от react-native-reanimated библиотека для использования анимированных компонентов.
+  2. Заменить Image компонент с <Animated.Image>.
+```
+import { ImageSourcePropType, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  return (
+    <View style={{ top: -350 }}>
+      <Animated.Image
+        source={stickerSource}
+        resizeMode="contain"
+        style={{ width: imageSize, height: imageSize }}
+      />
+    </View>
+  );
+}
+```
+### Добавить жест нажатия
+*React Native Gesture Handler* позволяет нам добавлять поведение, когда он обнаруживает сенсорный ввод, например, двойное нажатие.
+
+В ***src/components/emioji-sticker.tsx*** файле:
+
+  1. Импорт *Gesture* и *GestureDetector* от *react-native-gesture-handler*.
+  2. Чтобы распознать кран на наклейке, импортируйте *useAnimatedStyle*, *useSharedValue*, и *withSpring* от 8react-native-reanimated* чтобы оживить стиль <Animated.Image>.
+  3. Внутри *EmojiSticker* компонент, создать ссылку, называемую *scaleImage* с помощью *useSharedValue*() Крюк. Это возьмет на себя ценность *imageSize* В качестве его первоначального значения.
+```
+// ...rest of the import statements remain same
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+
+  return (
+    // ...rest of the code remains same
+  )
+}
+```
+Создать следующий объект в *EmojiSticker* компонент:
+```
+const doubleTap = Gesture.Tap()
+  .numberOfTaps(2)
+  .onStart(() => {
+    if (scaleImage.value !== imageSize * 2) {
+      scaleImage.value = scaleImage.value * 2;
+    } else {
+      scaleImage.value = Math.round(scaleImage.value / 2);
+    }
+  });
+```
+а изображении наклейки, мы будем использовать *useAnimatedStyle*() Крюк для создания объекта стиля. Это поможет нам обновлять стили, используя общие значения, когда происходит анимация. Мы также масштабируем размер изображения, манипулируя width и *height* свойства. Первоначальные значения этих свойств устанавливаются на *imageSize*.
+
+Создать a *imageStyle* переменная и добавить ее в *EmojiSticker* компонент:
+```const imageStyle = useAnimatedStyle(() => {
+  return {
+    width: withSpring(scaleImage.value),
+    height: withSpring(scaleImage.value),
+  };
+});```
+
+Далее, оберните <Animated.Image> Компонент с <GestureDetector> и изменить *style* Опора на <Animated.Image> чтобы пройти *imageStyle*.
+```import { ImageSourcePropType, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onStart(() => {
+      if (scaleImage.value !== imageSize * 2) {
+        scaleImage.value = scaleImage.value * 2;
+      } else {
+        scaleImage.value = Math.round(scaleImage.value / 2);
+      }
+    });
+
+  const imageStyle = useAnimatedStyle(() => {
+    return {
+      width: withSpring(scaleImage.value),
+      height: withSpring(scaleImage.value),
+    };
+  });
+
+  return (
+    <View style={{ top: -350 }}>
+       <GestureDetector gesture={doubleTap}>
+        <Animated.Image
+          source={stickerSource}
+          resizeMode="contain"
+          style={[{ width: imageSize, height: imageSize }, imageStyle]}
+        />
+      </GestureDetector>
+    </View>
+  );
+}
+```
+### Добавить жест сковороды
+Чтобы распознать жест перетаскивания на наклейке и отследить ее движение, мы будем использовать жест сковороды. В **src/components/emoidji-sticker.tsx** :
+
+  1. Создайте две новые общие ценности: *translateX* и *translateY*.
+  2. Заменить <View> с <Animated.View> компонент.
+
+```export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  // ...rest of the code remains same
+
+  return (
+    <Animated.View style={{ top: -350 }}>
+      <GestureDetector gesture={doubleTap}>
+        {/* ...rest of the code remains same */}
+      </GestureDetector>
+    </Animated.View>
+  );
+}```
+На предыдущем шаге мы спровоцировали *onStart*() обратный звонок для жеста крана, прикованного к *Gesture.Tap()* Метод. Для жеста сковороды укажите *onChange*() обратный звонок, который проходит, когда жест активен и движется.
+
+  1. Создать a *drag* объект, чтобы справиться с жестом сковороды. The *onChange*() обратный звонок принимает *event* в качестве параметра. *changeX* и *changeY* свойства удерживают изменение позиции с момента последнего события и обновляют значения, хранящиеся в *translateX* и *translateY*.
+  2. Определить *containerStyle* Объект, использующий *useAnimatedStyle()* Крюк. Это вернет множество преобразований. Для <Animated.View> компонент, нам нужно установить transform Имущество для *translateX* и *translateY* Ценности. Это изменит положение наклейки, когда жест активен.
+```const drag = Gesture.Pan().onChange(event => {
+  translateX.value += event.changeX;
+  translateY.value += event.changeY;
+});
+
+const containerStyle = useAnimatedStyle(() => {
+  return {
+    transform: [
+      {
+        translateX: translateX.value,
+      },
+      {
+        translateY: translateY.value,
+      },
+    ],
+  };
+});```
+
+Далее, внутри кода JSX:
+
+  1. Обновить <EmojiSticker> Компонент, чтобы <GestureDetector> Компонент становится компонентом верхнего уровня.
+  2. Добавить *containerStyle* на <Animated.View> Компонент для применения стилей трансформации.
+
+```import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { ImageSourcePropType } from 'react-native';
+
+type Props = {
+  imageSize: number;
+  stickerSource: ImageSourcePropType;
+};
+
+export default function EmojiSticker({ imageSize, stickerSource }: Props) {
+  const scaleImage = useSharedValue(imageSize);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onStart(() => {
+      if (scaleImage.value !== imageSize * 2) {
+        scaleImage.value = scaleImage.value * 2;
+      } else {
+        scaleImage.value = Math.round(scaleImage.value / 2);
+      }
+    });
+
+  const imageStyle = useAnimatedStyle(() => {
+    return {
+      width: withSpring(scaleImage.value),
+      height: withSpring(scaleImage.value),
+    };
+  });
+
+  const drag = Gesture.Pan().onChange(event => {
+    translateX.value += event.changeX;
+    translateY.value += event.changeY;
+  });
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: translateX.value,
+        },
+        {
+          translateY: translateY.value,
+        },
+      ],
+    };
+  });
+
+  return (
+    <GestureDetector gesture={drag}>
+      <Animated.View style={[containerStyle, { top: -350 }]}>
+        <GestureDetector gesture={doubleTap}>
+          <Animated.Image
+            source={stickerSource}
+            resizeMode="contain"
+            style={[{ width: imageSize, height: imageSize }, imageStyle]}
+          />
+        </GestureDetector>
+      </Animated.View>
+    </GestureDetector>
+  );
+}```
+
+## Сделать скриншот
+
 
