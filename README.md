@@ -221,6 +221,10 @@ export default function RootLayout() {
 2. Добавить a Link компонент после <Text> компонент и пропуск href реквизит с /about Маршрут.
 3. Добавить стиль fontSize, textDecorationLine, и color к Link компонент. Он принимает тот же реквизит, что и <Text> компонент.
 
+<details>
+<summary>Показать код</summary>
+
+
 ```
 import { Text, View, StyleSheet } from 'react-native';
  import { Link } from 'expo-router'; 
@@ -255,12 +259,18 @@ const styles = StyleSheet.create({
 
 ```
 
+</details>
+
 
 ### ❌Добавить не найденный маршрут
 Когда маршрут не существует, мы можем использовать ***+not-found*** для отображения запасного экрана.
 1. Создать новый файл с именем +not-found.tsx внутри src/приложение Каталог для добавления NotFoundScreen компонент.
 2. Добавить options реквизит от Stack.Screen для отображения пользовательского заголовка экрана для этого маршрута.
 3. Добавить a Link Компонент для перехода к / Маршрут, который является нашим запасным маршрутом.
+
+
+<details>
+<summary>Показать код</summary>
 
 ```
 import { View, StyleSheet } from 'react-native';
@@ -294,6 +304,8 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
 
 Чтобы проверить это, перейдите к ***http:localhost:8081/123*** URL в веб-браузере, так как там легко изменить путь URL. Приложение должно отображать *NotFoundScreen* компонент
 
@@ -346,6 +358,10 @@ export default function TabLayout() {
 2. Добавить *tabBarIcon* для обоих *index* и *about* Маршруты. Эта функция принимает focused и color как парам и отображает компонент значка. Из набора иконок мы можем предоставить пользовательские имена значков.
 3. Добавить *screenOptions.tabBarActiveTintColor* к *Tabs* компонент и установить его значение для #ffd33d. Это изменит цвет значка икета вкладки и этикетку при активном.
 
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { Tabs } from 'expo-router';
 
@@ -382,6 +398,8 @@ export default function TabLayout() {
 }
 ```
 
+</details>
+
 Давайте также изменим цвет фона панели вкладок и заголовка с помощью screenOptions реквизит:
 ```
 <Tabs
@@ -415,6 +433,10 @@ export default function TabLayout() {
 
 1. Импорт Image от expo-image Библиотека.
 2. Создать a PlaceholderImage переменная для использования активы/images/background-image.png файл как source Опора на Image компонент.
+
+
+<details>
+<summary>Показать код</summary>
 
 ```
 import { View, StyleSheet } from 'react-native';
@@ -450,6 +472,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### ✂Разделить компоненты на файлы
 Давайте разделим код на несколько файлов, так как мы добавляем больше компонентов на этот экран. На протяжении всего этого урока мы будем использовать каталог компонентов для создания пользовательских компонентов.
 
@@ -506,6 +531,10 @@ const styles = StyleSheet.create({
 ```
 ### 🖱Создать кнопки с помощью прессов
 В дизайне есть две кнопки, которые нам нужно создать. Каждый из них имеет свой стиль и этикетку. Давайте начнем с создания многоразового компонента для этих кнопок. Создайте файл **button.tsx** внутри каталога **src/components** с помощью следующего кода:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 
@@ -546,7 +575,14 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Приложение отображает оповещение, когда пользователь нажимает любую из кнопок на экране. Это происходит потому, что <Pressable> звонки *alert()* на его *onPress*. Давайте импортируем этот компонент в **src/app/(tabs)/index.tsx** файл и добавить стили для <View> которые инкапсулируют эти кнопки:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, StyleSheet } from 'react-native';
 
@@ -584,10 +620,17 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### 🎇Улучшить многоразовый компонент кнопки
 Кнопка ***«Выберите фотографию»*** требует другого стиля, чем кнопка ***«Использовать эту фотографию»***, поэтому мы добавим новый реквизит кнопки, который позволит нам применять *primary* Тема. Эта кнопка также имеет иконку перед этикеткой. Мы будем использовать иконку из *@expo/vector-icons* Библиотека.
 
 Чтобы загрузить и отобразить значок на кнопке, давайте использовать FontAwesome Из библиотеки.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -651,7 +694,13 @@ const styles = StyleSheet.create({
 });
 ```
 
+</details>
+
 А теперь, измените **src/app/(tabs)/index.tsx** файл для использования *theme="primary"* Реквизит на первой кнопке.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, StyleSheet } from 'react-native';
 
@@ -689,6 +738,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ## 🎞Использовать сборщик изображений
 ### 💻Установить expo-image-Picker
 Чтобы установить expo-image-picker библиотека, остановите сервер разработки, нажав **Ctrl + C** в терминале, затем запустить следующую команду:
@@ -721,6 +773,10 @@ export default function Index() {
 ```
 ### 🔃Обновите компонент кнопки
 При нажатии основной кнопки мы позвоним *pickImageAsync()* на *Button* компонент. Обновить *onPress* реквизит *Button* компонент в **src/components/button.tsx**:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { StyleSheet, View, Pressable, Text } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -782,7 +838,14 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 В **src/app/(tabs)/index.tsx**, добавить *pickImageAsync()* Функция для *onPress* реквизит на первом <Button>.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -835,6 +898,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### 🖼Использовать выбранное изображение
 The result Объект обеспечивает assets массив, который содержит uri Выбранное изображение. Давайте возьмем это значение из сборщика изображений и используем его, чтобы показать выбранное изображение в приложении.
 
@@ -843,6 +909,10 @@ The result Объект обеспечивает assets массив, котор
 1. Объявить переменную состояния, называемую selectedImage с помощью useState Крюк от React. Мы будем использовать эту переменную состояния для удержания URI выбранного изображения.
 2. Обновить pickImageAsync() функция для сохранения изображения URI в selectedImage Переменная состояния.
 3. Пройти selectedImage В качестве опоры для ImageViewer компонент.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -900,6 +970,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Пройти *selectedImage* для *ImageViewer* компонент для отображения выбранного изображения вместо образа заполнителя.
 
 1. Изменить **src/components/image-viewer.tsx** файл, чтобы принять *selectedImage*.
@@ -938,6 +1011,9 @@ const styles = StyleSheet.create({
 1. Объявить переменную булева состояния, *showAppOptions*, чтобы показать или скрыть кнопки, которые открывают модаль, наряду с несколькими другими вариантами. Когда экран приложения загружается, мы настроим его *false* Таким образом, опции не отображаются перед выбором изображения. Когда пользователь выбирает изображение или использует образ заполнителя, мы установим его *true*.
 2. Обновить *pickImageAsync()* функция для установления значения *showAppOptions* к *true* После того, как пользователь выбирает изображение.
 3. Обновите кнопку без темы, добавив onPress реквизит со следующим значением.
+
+<details>
+<summary>Показать код</summary>
 
 ```
 import { View, StyleSheet } from 'react-native';
@@ -1000,10 +1076,17 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Теперь мы можем удалить alert на Button компонент и обновление onPress реквизит при рендеринге второй кнопки в src/components/button.tsx:
 `<Pressable style={styles.button}  onPress={onPress}>`
 ### 🕳Добавить кнопки
 Внутри каталога **src/components** создайте новый файл **circle-button.tsx** со следующим кодом:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, Pressable, StyleSheet } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -1041,11 +1124,18 @@ const styles = StyleSheet.create({
   },
 });
 ```
+</details>
+
+
 Создать именованный файл **icon-button.tsx** внутри **src/компоненты** Каталог. Этот компонент принимает три реквизита:
 
   * icon: имя, соответствующее *MaterialIcons* Икона библиотеки.
   * label: текстовая этикетка, отображаемая на кнопке.
   * onPress: эта функция вызывает, когда пользователь нажимает кнопку.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { Pressable, StyleSheet, Text } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -1076,10 +1166,17 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Внутренний **src/app/(tbs)/index.tsx** :
 
   1. Импортировать *CircleButton* и *IconButton* Компоненты для их отображения.
   2. Добавьте три функции заполнителя для этих кнопок. *onReset()* функции вызывают, когда пользователь нажимает кнопку сброса, в результате чего кнопка выбора изображения снова появляется. Мы добавим функциональность для двух других функций позже.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -1171,12 +1268,19 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### 😝Создать модаль сборщика смайликов
 Модаль позволяет пользователю выбрать эмодзи из списка доступных эмодзи. Создайте файл **emoji-picker.tsx** внутри каталога **src/components**. Этот компонент принимает три реквизита:
 
   * isVisible: бульон для определения состояния видимости модала.
   * onClose: функция, чтобы закрыть модаль.
   * children: используется позже для отображения списка эмодзи.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { Modal, View, Text, Pressable, StyleSheet } from 'react-native';
 import { PropsWithChildren } from 'react';
@@ -1231,6 +1335,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Теперь давайте изменим **src/app/(tabs)/index.tsx** :
 
   1. Импортировать <EmojiPicker> компонент.
@@ -1238,6 +1345,10 @@ const styles = StyleSheet.create({
   3. Заменить комментарий в *onAddSticker()* функция для обновления *isModalVisible* переменная для *true* когда пользователь нажимает кнопку. Это откроет сборщик смайликов.
   4. Создать *onModalClose()* функция для обновления *isModalVisible* Переменная состояния.
   5. Поместите <EmojiPicker> Компонент в нижней части *Index* компонент.
+
+
+<details>
+<summary>Показать код</summary>
 
 ```
 import { View, StyleSheet } from 'react-native';
@@ -1339,10 +1450,17 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### 📃Показать список смайликов
 Давайте добавим горизонтальный список эмодзи в содержимое модала. Мы будем использовать <FlatList> Компонент от React Native для него.
 
 Создайте файл **emoji-list.tsx** в каталоге **src/components** и добавьте следующий код:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { useState } from 'react';
 import { ImageSourcePropType, StyleSheet, FlatList, Platform, Pressable } from 'react-native';
@@ -1398,7 +1516,14 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 Теперь обновите **src/app/(tabs)/index.tsx** Чтобы импортировать <EmojiList> компонент и замена комментариев внутри <EmojiPicker> компонент со следующим фрагментом кода:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { ImageSourcePropType, View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -1501,6 +1626,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ### 🎃Отобразить выбранный emoji
 Теперь мы поместим наклейку смайлика на изображение. Создайте новый файл в каталоге **src/components** и назовите его **emoji-sticker.tsx.** Затем добавьте следующий код:
 
@@ -1522,6 +1650,10 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 }
 ```
 Импортировать этот компонент в **src/app/(tabs)/index.tsx** Файл и обновить *Index* компонент для отображения наклейки emoji на изображении. Мы проверим, *pickedEmoji* не является *undefined*:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { ImageSourcePropType, View, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -1626,6 +1758,8 @@ const styles = StyleSheet.create({
 });
 ```
 
+</details>
+
 ## 🖐Добавить жесты
 ### 🤝Добавить ЖестОбработчикРужникПросмотр
 Чтобы получить взаимодействие жестов для работы в приложении, мы вернемся *<GestureHandlerRootView>* от *react-native-gesture-handler* на вершине *Index* компонент. Заменить уровень корней <View> компонент в **src/app/(tabs)/index.tsx** с *<GestureHandlerRootView>*.
@@ -1688,7 +1822,10 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   )
 }
 ```
+
+
 Создать следующий объект в *EmojiSticker* компонент:
+
 ```
 const doubleTap = Gesture.Tap()
   .numberOfTaps(2)
@@ -1700,18 +1837,29 @@ const doubleTap = Gesture.Tap()
     }
   });
 ```
+
+
 а изображении наклейки, мы будем использовать *useAnimatedStyle*() Крюк для создания объекта стиля. Это поможет нам обновлять стили, используя общие значения, когда происходит анимация. Мы также масштабируем размер изображения, манипулируя width и *height* свойства. Первоначальные значения этих свойств устанавливаются на *imageSize*.
 
 Создать a *imageStyle* переменная и добавить ее в *EmojiSticker* компонент:
+
+
 ```const imageStyle = useAnimatedStyle(() => {
   return {
     width: withSpring(scaleImage.value),
     height: withSpring(scaleImage.value),
   };
-});```
+});
+```
+
 
 Далее, оберните <Animated.Image> Компонент с <GestureDetector> и изменить *style* Опора на <Animated.Image> чтобы пройти *imageStyle*.
-```import { ImageSourcePropType, View } from 'react-native';
+
+<details>
+<summary>Показать код</summary>
+
+```
+import { ImageSourcePropType, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
@@ -1753,11 +1901,17 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   );
 }
 ```
+
+</details>
+
 ### Добавить жест сковороды
 Чтобы распознать жест перетаскивания на наклейке и отследить ее движение, мы будем использовать жест сковороды. В **src/components/emoidji-sticker.tsx** :
 
   1. Создайте две новые общие ценности: *translateX* и *translateY*.
   2. Заменить <View> с <Animated.View> компонент.
+
+<details>
+<summary>Показать код</summary>
 
 ```export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   const scaleImage = useSharedValue(imageSize);
@@ -1774,10 +1928,17 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
   );
 }
 ```
+
+</details>
+
 На предыдущем шаге мы спровоцировали *onStart*() обратный звонок для жеста крана, прикованного к *Gesture.Tap()* Метод. Для жеста сковороды укажите *onChange*() обратный звонок, который проходит, когда жест активен и движется.
 
   1. Создать a *drag* объект, чтобы справиться с жестом сковороды. The *onChange*() обратный звонок принимает *event* в качестве параметра. *changeX* и *changeY* свойства удерживают изменение позиции с момента последнего события и обновляют значения, хранящиеся в *translateX* и *translateY*.
   2. Определить *containerStyle* Объект, использующий *useAnimatedStyle()* Крюк. Это вернет множество преобразований. Для <Animated.View> компонент, нам нужно установить transform Имущество для *translateX* и *translateY* Ценности. Это изменит положение наклейки, когда жест активен.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 const drag = Gesture.Pan().onChange(event => {
   translateX.value += event.changeX;
@@ -1798,13 +1959,18 @@ const containerStyle = useAnimatedStyle(() => {
 });
 ```
 
+</details>
+
 Далее, внутри кода JSX:
 
   1. Обновить <EmojiSticker> Компонент, чтобы <GestureDetector> Компонент становится компонентом верхнего уровня.
   2. Добавить *containerStyle* на <Animated.View> Компонент для применения стилей трансформации.
 
-```i
-mport { Gesture, GestureDetector } from 'react-native-gesture-handler';
+<details>
+<summary>Показать код</summary>
+
+```
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ImageSourcePropType } from 'react-native';
 
@@ -1869,6 +2035,8 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 }
 ```
 
+</details>
+
 ## 📱Сделать скриншот
 ### 📚Установить библиотеки
 Установить **react-native-view-shot** и **expo-media-library**, выполните следующие команды:
@@ -1877,6 +2045,10 @@ export default function EmojiSticker({ imageSize, stickerSource }: Props) {
 Приложение, которое требует конфиденциальной информации, такой как доступ к медиатеке устройства, должно получить разрешение на доступ или запретить доступ. Использовать *useMediaLibraryPermissions()* Крюк от *expo-image-picker*, мы можем использовать разрешение *permissionResponse* и *requestPermission*() Способ запросить доступ. Этот крючок запрашивает как разрешения на чтение, так и запись, которые охватывают выбор изображений из библиотеки и сохранение скриншотов к ней.
 
 Добавьте следующий фрагмент кода внутрь src/app/(tabs)/index.tsx:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -1896,12 +2068,19 @@ export default function Index() {
   // ...rest of the code remains same
 }
 ```
+
+</details>
+
 ### ✅Создайте референт для сохранения текущего представления
 Мы будем использовать *react-native-view-shot* чтобы позволить пользователю сделать снимок экрана в приложении. Эта библиотека захватывает скриншот <View> как изображение с использованием *captureRef*() Метод. Он возвращает URI захваченного файла снимков скриншота.
 
   1. Импорт *captureRef* от *react-native-view-shot* и *useRef* От *React*.
   2. Создать a *imageRef* эталонная переменная для хранения ссылки на снимок экрана, захваченного изображения.
   3. Обернуть <ImageViewer> и <EmojiSticker> Компоненты внутри a <View> а затем передать ему справочную переменную.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import { useState, useRef } from 'react';
 import { captureRef } from 'react-native-view-shot';
@@ -1924,8 +2103,15 @@ export default function Index() {
   );
 }
 ```
+
+</details>
+
 ### 🆗Снимите скриншот и сохраните его
 Внутри **src/app/(tabs)/index.tsx**, обновить *onSaveImageAsync*() Функция со следующим кодом:
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -2058,6 +2244,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ## ❗Обработка различий платформы
 ### ➡Установить и импортировать dom-to-image
 Чтобы запечатлеть снимок экрана в Интернете и сохранить его в качестве изображения, мы будем использовать стороннюю библиотеку под названием *dom-to-image*. Он берет скриншот любого узла DOM и превращает его в векторный (SVG) или растровый (PNG или JPEG) изображение.
@@ -2070,6 +2259,10 @@ const styles = StyleSheet.create({
   1. Импортировать *Platform* Модуль от *react-native*.
   2. Импортировать *domtoimage* библиотека от *dom-to-image*.
   3. Обновить *onSaveImageAsync*() функция, чтобы проверить, является ли текущая платформа 'web' с *Platform*.OS собственность. Если это так 'web', мы будем использовать *domtoimage.toJpeg*() способ преобразования и захвата тока <View> В качестве изображения JPEG. В противном случае мы будем продолжать использовать ту же логику, добавленную для собственных платформ.
+
+<details>
+<summary>Показать код</summary>
+
 ```
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -2215,6 +2408,9 @@ const styles = StyleSheet.create({
   },
 });
 ```
+
+</details>
+
 ## 🌊Настройка панели состояния, экрана брызг и значка приложения 
 ### 🌫Настройка строки состояния
 *expo-status-bar* библиотека предустановлена в каждом проекте, созданном с использованием *create-expo-app*. Эта библиотека предоставляет *StatusBar* компонент для настройки стиля стенд состояния приложения.
