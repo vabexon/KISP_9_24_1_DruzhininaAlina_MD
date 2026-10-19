@@ -1,7 +1,5 @@
 import { Tabs } from 'expo-router';
-
 import Ionicons from '@expo/vector-icons/Ionicons';
-
 
 export default function TabLayout() {
   return (
@@ -32,7 +30,17 @@ export default function TabLayout() {
         options={{
           title: 'About',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
+            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24} />
+          ),
+        }}
+      />
+      {/* ДОБАВЛЯЕМ НОВУЮ ВКЛАДКУ */}
+      <Tabs.Screen
+        name="time"
+        options={{
+          title: 'Time',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'time' : 'time-outline'} color={color} size={24} />
           ),
         }}
       />
