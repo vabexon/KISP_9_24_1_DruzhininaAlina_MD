@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 export default function TimeScreen() {
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Обновляем время каждую секунду
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -12,7 +11,6 @@ export default function TimeScreen() {
     return () => clearInterval(timer); // Очистка при закрытии экрана
   }, []);
 
-  // Форматируем дату: ДД.ММ.ГГГГ
   const formatDate = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -20,7 +18,6 @@ export default function TimeScreen() {
     return `${day}.${month}.${year}`;
   };
 
-  // Форматируем время: ЧЧ:ММ:СС
   const formatTime = (date: Date) => {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
