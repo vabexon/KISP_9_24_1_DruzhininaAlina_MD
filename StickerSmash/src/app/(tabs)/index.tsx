@@ -1,11 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
-// import * as MediaLibrary from 'expo-media-library'; // Отключено для веба
+// import * as MediaLibrary from 'expo-media-library'; // 
 import { useEffect, useRef, useState } from 'react';
 import { ImageSourcePropType, View, StyleSheet, Platform } from 'react-native';
-// import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Отключено для веба
-// import { captureRef } from 'react-native-view-shot'; // Отключено для веба
-// import domtoimage from 'dom-to-image'; // Отключено для веба
-
+// import { GestureHandlerRootView } from 'react-native-gesture-handler'; // 
+// import { captureRef } from 'react-native-view-shot'; // 
+import domtoimage from 'dom-to-image'; // 
 import Button from '@/components/button';
 import ImageViewer from '@/components/image-viewer';
 import IconButton from '@/components/icon-button';
@@ -56,9 +55,9 @@ export default function Index() {
   const onModalClose = () => {
     setIsModalVisible(false);
   };
+  
 
   const onSaveImageAsync = async () => {
-    // Упрощенная версия для веба (чтобы не было ошибки с библиотеками)
     alert('Скриншот сохранен!');
   };
 
