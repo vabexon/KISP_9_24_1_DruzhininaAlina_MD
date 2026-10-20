@@ -8,7 +8,7 @@ export default function TimeScreen() {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    return () => clearInterval(timer); // Очистка при закрытии экрана
+    return () => clearInterval(timer); 
   }, []);
 
   const formatDate = (date: Date) => {
