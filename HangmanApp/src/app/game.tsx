@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, SafeAreaView, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, Modal, ActivityIndicator, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,7 +10,6 @@ import { useTheme } from '../context/ThemeContext';
 const ALPHABET = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
 const MAX_MISTAKES = 6;
 
-// Универсальный компонент для анимации
 const AnimatedPart = ({ style, color, children }: { style: any, color: string, children?: React.ReactNode }) => {
   const scale = useSharedValue(0);
   useEffect(() => { scale.value = withTiming(1, { duration: 500 }); }, []);
@@ -27,7 +26,7 @@ const AnimatedPart = ({ style, color, children }: { style: any, color: string, c
 
 export default function GameScreen() {
   const router = useRouter();
-  const { theme, color, hat, face } = useTheme(); // Достаем цвет, шляпу и лицо
+  const { theme, color, hat, face } = useTheme();
 
   const [word, setWord] = useState('');
   const [guessedLetters, setGuessedLetters] = useState<string[]>([]);
@@ -100,8 +99,7 @@ export default function GameScreen() {
     try {
       let currentStreak = await AsyncStorage.getItem('@win_streak');
       let streak = currentStreak ? parseInt(currentStreak) : 0;
-      if (win) {
-        streak += 1;
+      if (win) {streak += 1;
         await AsyncStorage.setItem('@win_streak', streak.toString());
         const historyData = await AsyncStorage.getItem('@game_history');
         let history = historyData ? JSON.parse(historyData) : [];
@@ -146,67 +144,80 @@ export default function GameScreen() {
     ));
   };
 
-  // Отрисовка шляпы
   const renderGameHat = () => {
     if (hat.hat === 'none') return null;
+    
+    // Базовое положение (совпадает с головой) + индивидуальный сдвиг для каждой шляпы
     return (
-      <View style={{ position: 'absolute', top: -24, alignItems: 'center', zIndex: 10 }}>
+      <View style={{ 
+        position: 'absolute', 
+        top: 50,   // Координата головы
+        left: 98,  // Координата головы
+        width: 30, 
+        alignItems: 'center', 
+        zIndex: 10,
+        marginTop: hat.offsetY, // СДВИГ ВВЕРХ/ВНИЗ
+        marginLeft: hat.offsetX  // СДВИГ ВЛЕВО/ВПРАВО
+      }}>
         {hat.hat === 'horns' && (
-          <View style={{ flexDirection: 'row', width: 44, justifyContent: 'space-between' }}>
-            <View style={{ width: 10, height: 16, backgroundColor: color.color, transform: [{ rotate: '-25deg' }], borderTopLeftRadius: 4 }} />
-            <View style={{ width: 10, height: 16, backgroundColor: color.color, transform: [{ rotate: '25deg' }], borderTopRightRadius: 4 }} />
+          <View style={{ flexDirection: 'row', width: 35, justifyContent: 'space-between', marginTop: -5 }}>
+            <View style={{ width: 8, height: 16, backgroundColor: color.color, transform: [{ rotate: '-25deg' }], borderTopLeftRadius: 4 }} />
+            <View style={{ width: 8, height: 16, backgroundColor: color.color, transform: [{ rotate: '25deg' }], borderTopRightRadius: 4 }} />
           </View>
         )}
         {hat.hat === 'wizard' && (
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ alignItems: 'center', marginTop: -20 }}>
             <View style={{ borderBottomWidth: 35, borderBottomColor: color.color, borderLeftWidth: 18, borderRightWidth: 18, borderLeftColor: 'transparent', borderRightColor: 'transparent' }} />
             <View style={{ width: 50, height: 6, backgroundColor: color.color, borderRadius: 3, marginTop: -2 }} />
           </View>
         )}
         {hat.hat === 'tophat' && (
-          <View style={{ alignItems: 'center' }}>
+          <View style={{ alignItems: 'center', marginTop: -15 }}>
             <View style={{ width: 32, height: 26, backgroundColor: color.color, borderRadius: 4, marginBottom: -2 }} />
             <View style={{ width: 48, height: 6, backgroundColor: color.color, borderRadius: 3 }} />
           </View>
         )}
         {hat.hat === 'halo' && (
-          <View style={{ width: 34, height: 8, borderRadius: 4, borderWidth: 3, borderColor: '#FFD700', marginTop: 10 }} />
+          <View style={{ width: 34, height: 8, borderRadius: 4, borderWidth: 3, borderColor: '#FFD700', marginTop: -12 }} />
         )}
       </View>
     );
   };
 
-  // Отрисовка эмоций на лице
   const renderFace = () => {
-    // Глаза
+    // Отрисовка глаз (для злого — обычные точки, для мертвого — крестики)
     const eyes = face.face === 'dead' ? (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 16, position: 'absolute', top: 6 }}>
-        <Text style={{ color: theme.bg, fontSize: 12, fontWeight: 'bold' }}>X</Text>
-        <Text style={{ color: theme.bg, fontSize: 12, fontWeight: 'bold' }}>X</Text>
-      </View>
-    ) : face.face === 'angry' ? (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 16, position: 'absolute', top: 6 }}>
-        <View style={{ width: 4, height: 4, backgroundColor: theme.bg, transform: [{ rotate: '45deg' }] }} />
-        <View style={{ width: 4, height: 4, backgroundColor: theme.bg, transform: [{ rotate: '-45deg' }] }} />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 16, position: 'absolute', top: 8 }}>
+        <Text style={{ color: theme.bg, fontSize: 12, fontWeight: 'bold', lineHeight: 12 }}>X</Text>
+        <Text style={{ color: theme.bg, fontSize: 12, fontWeight: 'bold', lineHeight: 12 }}>X</Text>
       </View>
     ) : (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 16, position: 'absolute', top: 6 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 14, position: 'absolute', top: 9 }}>
         <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: theme.bg }} />
         <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: theme.bg }} />
       </View>
     );
 
-    // Рот
+    // Отрисовка рта
     let mouth = null;
-    if (face.face === 'happy') mouth = <View style={{ width: 12, height: 6, borderBottomLeftRadius: 6, borderBottomRightRadius: 6, borderWidth: 2, borderTopWidth: 0, borderColor: theme.bg, position: 'absolute', top: 14 }} />;
-    if (face.face === 'sad') mouth = <View style={{ width: 12, height: 6, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 2, borderBottomWidth: 0, borderColor: theme.bg, position: 'absolute', top: 16 }} />;
+    if (face.face === 'happy') mouth = <View style={{ width: 12, height: 6, borderBottomLeftRadius: 6, borderBottomRightRadius: 6, borderWidth: 2, borderTopWidth: 0, borderColor: theme.bg, position: 'absolute', top: 16 }} />;
+    if (face.face === 'sad') mouth = <View style={{ width: 12, height: 6, borderTopLeftRadius: 6, borderTopRightRadius: 6, borderWidth: 2, borderBottomWidth: 0, borderColor: theme.bg, position: 'absolute', top: 18 }} />;
     if (face.face === 'dead') mouth = <View style={{ width: 10, height: 2, backgroundColor: theme.bg, position: 'absolute', top: 18 }} />;
-    if (face.face === 'normal') mouth = <View style={{ width: 10, height: 2, backgroundColor: theme.bg, position: 'absolute', top: 16 }} />;
+    if (face.face === 'normal' || face.face === 'angry') mouth = <View style={{ width: 10, height: 2, backgroundColor: theme.bg, position: 'absolute', top: 18 }} />;
+
+    // Если лицо злое, рисуем поверх злые брови
+    const angryBrows = face.face === 'angry' ? (
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: 18, position: 'absolute', top: 4 }}>
+        <View style={{ width: 6, height: 3, backgroundColor: theme.bg, transform: [{ rotate: '25deg' }] }} />
+        <View style={{ width: 6, height: 3, backgroundColor: theme.bg, transform: [{ rotate: '-25deg' }] }} />
+      </View>
+    ) : null;
 
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         {eyes}
         {mouth}
+        {angryBrows}
       </View>
     );
   };
@@ -221,63 +232,68 @@ export default function GameScreen() {
         <Text style={[styles.livesText, { color: theme.primary }]}>Жизни: {MAX_MISTAKES - mistakes}/{MAX_MISTAKES}</Text>
       </View>
 
-      <View style={styles.hangmanContainer}>
-        <View style={styles.hangmanBase}>
-          <View style={[styles.hangmanPole, { backgroundColor: theme.text }]} />
-          <View style={[styles.hangmanBeam, { backgroundColor: theme.text }]} />
-          <View style={[styles.hangmanRope, { backgroundColor: theme.primary }]} />
-          
-          {/* ЧЕЛОВЕЧЕК */}
-          {mistakes >= 1 && (
-            <Animated.View style={[styles.hangmanHead, { borderColor: color.color }]}>
-              {renderFace()}
-              {renderGameHat()}
-            </Animated.View>
-          )}
-          {mistakes >= 2 && <AnimatedPart style={styles.hangmanBody} color={color.color} />}
-          {mistakes >= 3 && <AnimatedPart style={styles.hangmanLeftArm} color={color.color} />}
-          {mistakes >= 4 && <AnimatedPart style={styles.hangmanRightArm} color={color.color} />}
-          {mistakes >= 5 && <AnimatedPart style={styles.hangmanLeftLeg} color={color.color} />}
-          {mistakes >= 6 && <AnimatedPart style={styles.hangmanRightLeg} color={color.color} />}
-        </View>
-      </View>
-
-      <View style={styles.wordContainer}>
-        {isLoading ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', height: 40 }}>
-            <ActivityIndicator size="small" color={theme.primary} />
-            <Text style={{ color: theme.text, marginLeft: 10 }}>Загрузка...</Text>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}>
+        
+        <View style={styles.hangmanContainer}>
+          <View style={styles.hangmanBase}>
+            <View style={[styles.hangmanPole, { backgroundColor: theme.text }]} />
+            <View style={[styles.hangmanBeam, { backgroundColor: theme.text }]} />
+            <View style={[styles.hangmanRope, { backgroundColor: theme.primary }]} />
+            
+            {mistakes >= 1 && (
+              <Animated.View style={[styles.hangmanHead, { borderColor: color.color, backgroundColor: '#ffffff' }]}>
+                {renderFace()}
+              </Animated.View>
+            )}
+            
+            {/* Шляпа рендерится здесь, с точными координатами головы */}
+            {mistakes >= 1 && renderGameHat()}
+            
+            {mistakes >= 2 && <AnimatedPart style={styles.hangmanBody} color={color.color} />}
+            {mistakes >= 3 && <AnimatedPart style={styles.hangmanLeftArm} color={color.color} />}
+            {mistakes >= 4 && <AnimatedPart style={styles.hangmanRightArm} color={color.color} />}
+            {mistakes >= 5 && <AnimatedPart style={styles.hangmanLeftLeg} color={color.color} />}
+            {mistakes >= 6 && <AnimatedPart style={styles.hangmanRightLeg} color={color.color} />}
           </View>
-        ) : renderWord()}
-      </View>
+        </View>
 
-      <View style={styles.keyboardContainer}>
-        {ALPHABET.map((letter) => {
-          const isGuessed = guessedLetters.includes(letter);
-          const isInWord = word.includes(letter);
+        <View style={styles.wordContainer}>
+          {isLoading ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: 40 }}>
+              <ActivityIndicator size="small" color={theme.primary} />
+              <Text style={{ color: theme.text, marginLeft: 10 }}>Загрузка...</Text>
+            </View>) : renderWord()}
+        </View>
 
-          return (
-            <Pressable
-              key={letter}
-              style={[
-                styles.key,
-                { backgroundColor: theme.card },
-                isGuessed && (isInWord ? styles.keyCorrect : styles.keyWrong)
-              ]}
-              onPress={() => handleLetterPress(letter)}
-              disabled={isGuessed || isGameOver || isLoading}
-            >
-              <Text style={[styles.keyText, { color: theme.primary }, isGuessed && { color: '#fff' }]}>
-                {letter}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
+        <View style={styles.keyboardContainer}>
+          {ALPHABET.map((letter) => {
+            const isGuessed = guessedLetters.includes(letter);
+            const isInWord = word.includes(letter);
 
-      <Pressable style={[styles.restartButton, { backgroundColor: theme.primary }]} onPress={() => startNewGame(false)}>
-        <Text style={styles.restartButtonText}>Начать заново</Text>
-      </Pressable>
+            return (
+              <Pressable
+                key={letter}
+                style={[
+                  styles.key,
+                  { backgroundColor: theme.card },
+                  isGuessed && (isInWord ? styles.keyCorrect : styles.keyWrong)
+                ]}
+                onPress={() => handleLetterPress(letter)}
+                disabled={isGuessed || isGameOver || isLoading}
+              >
+                <Text style={[styles.keyText, { color: theme.primary }, isGuessed && { color: '#fff' }]}>
+                  {letter}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <Pressable style={[styles.restartButton, { backgroundColor: theme.primary }]} onPress={() => startNewGame(false)}>
+          <Text style={styles.restartButtonText}>Начать заново</Text>
+        </Pressable>
+
+      </ScrollView>
 
       <Modal visible={isGameOver} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
@@ -308,10 +324,10 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: 'bold', letterSpacing: 2 },
   livesText: { fontSize: 16, fontWeight: 'bold' },
   
-  hangmanContainer: { height: 200, justifyContent: 'flex-end', alignItems: 'center', marginTop: 20, marginBottom: 10 },
-  hangmanBase: { width: 160, height: 190, position: 'relative' },
+  hangmanContainer: { height: 180, justifyContent: 'flex-end', alignItems: 'center', marginTop: 10, marginBottom: 10 },
+  hangmanBase: { width: 160, height: 180, position: 'relative' },
   
-  hangmanPole: { position: 'absolute', bottom: 0, left: 30, width: 10, height: 190 },
+  hangmanPole: { position: 'absolute', bottom: 0, left: 30, width: 10, height: 180 },
   hangmanBeam: { position: 'absolute', top: 0, left: 30, width: 100, height: 10 },
   hangmanRope: { position: 'absolute', top: 10, left: 110, width: 6, height: 40 },
   
@@ -323,25 +339,25 @@ const styles = StyleSheet.create({
     height: 30, 
     borderWidth: 4, 
     borderRadius: 15,
-    backgroundColor: '#ffffff', // Белый фон, чтобы эмоции были видны
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5
   },
-  hangmanBody: { position: 'absolute', top: 80, left: 110, width: 6, height: 50 },
+  hangmanBody: { position: 'absolute', top: 80, left: 110, width: 6, height: 45 },
   hangmanLeftArm: { position: 'absolute', top: 85, left: 92, width: 18, height: 6, transform: [{ rotate: '30deg' }] },
   hangmanRightArm: { position: 'absolute', top: 85, left: 116, width: 18, height: 6, transform: [{ rotate: '-30deg' }] },
-  hangmanLeftLeg: { position: 'absolute', top: 128, left: 104, width: 6, height: 30, transform: [{ rotate: '15deg' }] },
-  hangmanRightLeg: { position: 'absolute', top: 128, left: 116, width: 6, height: 30, transform: [{ rotate: '-15deg' }] },
+  hangmanLeftLeg: { position: 'absolute', top: 122, left: 104, width: 6, height: 30, transform: [{ rotate: '15deg' }] },hangmanRightLeg: { position: 'absolute', top: 122, left: 116, width: 6, height: 30, transform: [{ rotate: '-15deg' }] },
   
-  wordContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 10, paddingHorizontal: 20, minHeight: 50 },
-  wordLetter: { fontSize: 30, fontWeight: 'bold', marginHorizontal: 4, letterSpacing: 2 },
-  keyboardContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: 10 },
-  key: { width: 36, height: 46, justifyContent: 'center', alignItems: 'center', borderRadius: 8, margin: 3 },
+  wordContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginVertical: 15, paddingHorizontal: 10, minHeight: 40 },
+  wordLetter: { fontSize: 26, fontWeight: 'bold', marginHorizontal: 3, letterSpacing: 1 },
+  
+  keyboardContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: 5 },
+  key: { width: 32, height: 42, justifyContent: 'center', alignItems: 'center', borderRadius: 6, margin: 2.5 },
   keyCorrect: { backgroundColor: '#4CAF50' },
   keyWrong: { backgroundColor: '#F44336' },
-  keyText: { fontSize: 16, fontWeight: 'bold' },
-  restartButton: { paddingVertical: 15, borderRadius: 25, alignItems: 'center', marginHorizontal: 40, marginTop: 20, marginBottom: 20 },
+  keyText: { fontSize: 14, fontWeight: 'bold' },
+  
+  restartButton: { paddingVertical: 14, borderRadius: 25, alignItems: 'center', marginHorizontal: 30, marginTop: 15, marginBottom: 15 },
   restartButtonText: { color: '#25292e', fontSize: 18, fontWeight: 'bold' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { width: '85%', maxWidth: 400, borderRadius: 20, padding: 30, alignItems: 'center' },

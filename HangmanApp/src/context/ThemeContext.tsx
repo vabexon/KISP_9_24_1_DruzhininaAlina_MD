@@ -12,18 +12,17 @@ export const THEMES = {
 
 export type ThemeKeys = keyof typeof THEMES;
 
-// Шляпы (без эмоций)
+// ДОБАВИЛИ offsetX и offsetY для тонкой настройки каждой шляпы
 export const HANGMAN_HATS = {
-  none: { name: 'Без шляпы', hat: 'none' },
-  horns: { name: 'Рога', hat: 'horns' },
-  wizard: { name: 'Колпак', hat: 'wizard' },
-  tophat: { name: 'Цилиндр', hat: 'tophat' },
-  halo: { name: 'Нимб', hat: 'halo' },
+  none: { name: 'Без шляпы', hat: 'none', offsetX: 0, offsetY: 0 },
+  horns: { name: 'Рога', hat: 'horns', offsetX: 0, offsetY: -5 },
+  wizard: { name: 'Колпак', hat: 'wizard', offsetX: 0, offsetY: -10 },
+  tophat: { name: 'Цилиндр', hat: 'tophat', offsetX: 0, offsetY: -5 },
+  halo: { name: 'Нимб', hat: 'halo', offsetX: 0, offsetY: 0 },
 };
 
 export type HatKeys = keyof typeof HANGMAN_HATS;
 
-// Цвета кожи для человечка
 export const HANGMAN_COLORS = {
   white: { name: 'Белый', color: '#ffffff' },
   green: { name: 'Зеленый', color: '#4CAF50' },
@@ -35,7 +34,6 @@ export const HANGMAN_COLORS = {
 
 export type ColorKeys = keyof typeof HANGMAN_COLORS;
 
-// Эмоции
 export const HANGMAN_FACES = {
   normal: { name: 'Обычное', face: 'normal' },
   happy: { name: 'Веселое', face: 'happy' },
@@ -50,15 +48,12 @@ type ThemeContextType = {
   theme: typeof THEMES[ThemeKeys];
   themeKey: ThemeKeys;
   setThemeKey: (key: ThemeKeys) => void;
-  
   color: typeof HANGMAN_COLORS[ColorKeys];
   colorKey: ColorKeys;
   setColorKey: (key: ColorKeys) => void;
-
   hat: typeof HANGMAN_HATS[HatKeys];
   hatKey: HatKeys;
   setHatKey: (key: HatKeys) => void;
-
   face: typeof HANGMAN_FACES[FaceKeys];
   faceKey: FaceKeys;
   setFaceKey: (key: FaceKeys) => void;
@@ -89,9 +84,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoaded(true);
     };
     loadSettings();
-  }, []);
-
-  const setThemeKey = async (key: ThemeKeys) => { setThemeKeyState(key); await AsyncStorage.setItem('@theme_key', key); };
+  }, []);const setThemeKey = async (key: ThemeKeys) => { setThemeKeyState(key); await AsyncStorage.setItem('@theme_key', key); };
   const setColorKey = async (key: ColorKeys) => { setColorKeyState(key); await AsyncStorage.setItem('@color_key', key); };
   const setHatKey = async (key: HatKeys) => { setHatKeyState(key); await AsyncStorage.setItem('@hat_key', key); };
   const setFaceKey = async (key: FaceKeys) => { setFaceKeyState(key); await AsyncStorage.setItem('@face_key', key); };
